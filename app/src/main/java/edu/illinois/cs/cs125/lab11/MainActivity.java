@@ -1,11 +1,13 @@
 package edu.illinois.cs.cs125.lab11;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -15,6 +17,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Main screen for our API testing app.
@@ -48,6 +53,12 @@ public final class MainActivity extends AppCompatActivity {
             public void onClick(final View v) {
                 Log.d(TAG, "Start API button clicked");
                 startAPICall();
+                Context context = getApplicationContext();
+                CharSequence text = "Processing Request...";
+                int duration = Toast.LENGTH_LONG;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
             }
         });
 
@@ -61,10 +72,11 @@ public final class MainActivity extends AppCompatActivity {
      */
     void startAPICall() {
         try {
+            final JSONObject jsonBody = new JSONObject("{\"go to hell\":\"kill yourself\"}");
             JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
-                    Request.Method.GET,
-                    "",
-                    null,
+                    Request.Method.POST,
+                    "https://ws.detectlanguage.com/0.2/detect",
+                    jsonBody,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(final JSONObject response) {
@@ -75,7 +87,15 @@ public final class MainActivity extends AppCompatActivity {
                         public void onErrorResponse(final VolleyError error) {
                             Log.w(TAG, error.toString());
                         }
-                    });
+                    }) {
+                @Override
+                public Map<String, String> getHeaders() {
+                    Map<String, String> params = new HashMap<String, String>();
+                    params.put("Authorization", "Bearer 29ed4c4ae60c61d3729473c960ec6b0d");
+                    Log.d(TAG, params.toString());
+                    return params;
+                }
+            };
             requestQueue.add(jsonObjectRequest);
         } catch (Exception e) {
             e.printStackTrace();
